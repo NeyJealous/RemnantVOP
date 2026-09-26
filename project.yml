@@ -1,0 +1,64 @@
+name: RemnantVOP
+
+options:
+  bundleIdPrefix: com.neyjealous
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+
+targets:
+  RemnantVOP:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Core
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: RemnantVOP
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP
+        CODE_SIGN_ENTITLEMENTS: App/RemnantVOP.entitlements
+    dependencies:
+      - target: RemnantVOPPacketTunnel
+
+  RemnantVOPPacketTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PacketTunnel
+      - path: Core
+    info:
+      path: PacketTunnel/Info.plist
+      properties:
+        CFBundleDisplayName: RemnantVOP Tunnel
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).PacketTunnelProvider"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP.PacketTunnel
+        CODE_SIGN_ENTITLEMENTS: PacketTunnel/PacketTunnel.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+
+  RemnantVOPTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: RemnantVOP
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOPTests
