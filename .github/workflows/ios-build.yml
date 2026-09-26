@@ -35,17 +35,7 @@ jobs:
             -clonedSourcePackagesDirPath "$PWD/.spm"
 
       - name: Build AmneziaWG Go bridge
-        run: |
-          AWG_CHECKOUT="$PWD/.spm/checkouts/amneziawg-apple"
-          test -d "$AWG_CHECKOUT/Sources/WireGuardKitGo"
-
-          make -C "$AWG_CHECKOUT/Sources/WireGuardKitGo" \
-            ARCHS=arm64 \
-            PLATFORM_NAME=iphoneos \
-            SDKROOT="$(xcrun --sdk iphoneos --show-sdk-path)" \
-            IPHONEOS_DEPLOYMENT_TARGET=16.0 \
-            DEPLOYMENT_TARGET_CLANG_FLAG_NAME=miphoneos-version-min \
-            DEPLOYMENT_TARGET_CLANG_ENV_NAME=IPHONEOS_DEPLOYMENT_TARGET
+        run: ./scripts/build-awg-bridge.sh "$PWD/.spm/checkouts/amneziawg-apple"
 
       - name: Build without signing
         run: |
