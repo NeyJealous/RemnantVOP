@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - phase-0-foundation
+      - phase-1-awg
   pull_request:
 
 jobs:
@@ -18,15 +19,31 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
+      - name: Install Go 1.26
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+
       - name: Generate Xcode project
         run: xcodegen generate
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild \
+            -resolvePackageDependencies \
+            -project RemnantVOP.xcodeproj \
+            -clonedSourcePackagesDirPath "$PWD/.spm"
+
+      - name: Build AmneziaWG Go bridge
+        run: ./scripts/build-awg-bridge.sh "$PWD/.spm/checkouts/amneziawg-apple"
 
       - name: Build without signing
         run: |
           xcodebuild \
             -project RemnantVOP.xcodeproj \
             -scheme RemnantVOP \
-            -sdk iphonesimulator \
-            -destination 'generic/platform=iOS Simulator' \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -clonedSourcePackagesDirPath "$PWD/.spm" \
             CODE_SIGNING_ALLOWED=NO \
             build

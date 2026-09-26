@@ -11,6 +11,11 @@ settings:
     SWIFT_VERSION: "5.10"
     IPHONEOS_DEPLOYMENT_TARGET: "16.0"
 
+packages:
+  WireGuardKit:
+    url: https://github.com/amnezia-vpn/amneziawg-apple.git
+    revision: 9d5ee60edefa95b933a738dd7cda671dd18021fc
+
 targets:
   RemnantVOP:
     type: application
@@ -30,6 +35,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP
         CODE_SIGN_ENTITLEMENTS: App/RemnantVOP.entitlements
     dependencies:
+      - package: WireGuardKit
+        product: WireGuardKit
       - target: RemnantVOPPacketTunnel
 
   RemnantVOPPacketTunnel:
@@ -51,6 +58,9 @@ targets:
         CODE_SIGN_ENTITLEMENTS: PacketTunnel/PacketTunnel.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
+    dependencies:
+      - package: WireGuardKit
+        product: WireGuardKit
 
   RemnantVOPTests:
     type: bundle.unit-test
