@@ -1,6 +1,6 @@
 # RemnantVOP
 
-iOS VPN client foundation for a single application that will support:
+iOS VPN client for:
 
 - AmneziaWG 3.1
 - VLESS / Xray-compatible profiles
@@ -11,15 +11,40 @@ iOS VPN client foundation for a single application that will support:
 
 ## Current status
 
-**Phase 0 — Foundation**
+### Phase 0 — complete
 
-The repository contains a SwiftUI + NetworkExtension skeleton, a protocol-neutral profile model, routing model, import pipeline, `vpn://` decoder, and engine adapters prepared for AWG and sing-box integration.
+- SwiftUI application
+- `NEPacketTunnelProvider`
+- common `VPNProfile`
+- common `RoutingProfile`
+- import recognition
+- Amnezia `vpn://` decoder
 
-The actual packet engines are intentionally not linked yet. `AWGEngine` and `SingBoxEngine` fail closed until their native cores are added in the next phases.
+### Phase 1 — AmneziaWG 3.1
+
+The AWG engine is connected to `amneziawg-apple` / `WireGuardKit`.
+
+The parser supports the current AWG 3.1 fields:
+
+```text
+Jc Jmin Jmax
+S1 S2 S3 S4
+H1 H2 H3 H4
+I1 I2 I3 I4 I5
+HeaderProtectionKey
+ContentPaddingAddition
+RekeyAfterTime
+RekeyTimeout
+RejectAfterTime
+KeepaliveTimeout
+MaxHandshakeAttempts
+RandomTrailers
+DisableCookies
+```
+
+Both raw wg-quick/AWG configs and Amnezia `vpn://` JSON are accepted. Nested `last_config` data is searched recursively.
 
 ## Generate the Xcode project
-
-The project definition is kept in `project.yml` and generated with XcodeGen:
 
 ```bash
 brew install xcodegen
@@ -27,32 +52,17 @@ xcodegen generate
 open RemnantVOP.xcodeproj
 ```
 
+`WireGuardKit` requires the AmneziaWG Go bridge (`libwg-go.a`). The CI workflow shows the reproducible build command for iPhoneOS.
+
 ## Targets
 
 - `RemnantVOP` — SwiftUI application
-- `RemnantVOPPacketTunnel` — `NEPacketTunnelProvider` extension
-- `RemnantVOPTests` — import/model tests
+- `RemnantVOPPacketTunnel` — `NEPacketTunnelProvider`
+- `RemnantVOPTests` — import/config tests
 
-## Import formats
+## Next
 
-Phase 0 recognizes:
-
-```text
-vpn://...
-vless://...
-hysteria2://...
-hy2://...
-https://...
-http://...
-[Interface] / [Peer] AWG-WireGuard text
-```
-
-For Amnezia `vpn://` keys the original decoded JSON is preserved verbatim in the profile. This is deliberate: AWG 3.x fields unknown to the UI must not be discarded during import.
-
-## Next phase
-
-1. Link `amneziawg-apple` / WireGuardKit and implement `AWGEngine`.
-2. Add the iOS sing-box library and implement VLESS + Hysteria2 in `SingBoxEngine`.
-3. Add `NETunnelProviderManager` persistence/connect controls.
-4. Add Remnawave subscription fetching and refresh.
-5. Compile the shared routing model into sing-box rules and AWG IP routes.
+- validate AWG on a physical iPhone
+- add `NETunnelProviderManager` connect/disconnect UI
+- integrate sing-box for VLESS + Hysteria2
+- implement subscription refresh and shared routing compilers
