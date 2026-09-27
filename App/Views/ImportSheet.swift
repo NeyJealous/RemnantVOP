@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 import VisionKit
 
@@ -124,10 +125,10 @@ private struct QRScannerSheet: View {
                     QRScannerRepresentable(onValue: onValue)
                         .ignoresSafeArea()
                 } else {
-                    ContentUnavailableView(
-                        "Сканер недоступен",
+                    EmptyStateView(
+                        title: "Сканер недоступен",
                         systemImage: "qrcode",
-                        description: Text("Вставьте ссылку или импортируйте файл.")
+                        message: "Вставьте ссылку или импортируйте файл."
                     )
                 }
             }
