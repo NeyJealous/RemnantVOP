@@ -31,6 +31,7 @@ targets:
           - SingBox/SingBoxRuntime.swift
           - SingBox/SingBoxPlatformInterface.swift
           - SingBox/SingBoxCommandHandler.swift
+          - Mihomo/MihomoBridge.swift
           - Xray/**
     info:
       path: App/Info.plist
@@ -85,9 +86,7 @@ targets:
     platform: iOS
     sources:
       - path: Extensions/Hysteria
-      - path: Core/Engine/VPNEngine.swift
-      - path: Core/Engine/SingBoxEngine.swift
-      - path: Core/SingBox
+      - path: Core/Mihomo
       - path: Core/Models
       - path: Core/Routing
       - path: Core/Tunnel
@@ -107,9 +106,8 @@ targets:
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
     dependencies:
-      - framework: Vendor/Libbox.xcframework
+      - framework: Vendor/Libmihomo.xcframework
         embed: false
-      - sdk: UIKit.framework
       - sdk: libresolv.tbd
 
   RemnantVOPXrayTunnel:
