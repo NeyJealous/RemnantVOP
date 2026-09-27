@@ -28,7 +28,7 @@ struct ServersView: View {
         .navigationTitle("Серверы")
         .searchable(text: $searchText, prompt: "Найти сервер")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showImport = true
                 } label: {
@@ -45,12 +45,11 @@ struct ServersView: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 if filteredGroups.isEmpty {
-                    ContentUnavailableView(
-                        "Нет серверов",
+                    EmptyStateView(
+                        title: "Нет серверов",
                         systemImage: "server.rack",
-                        description: Text("Добавьте подписку, ссылку или конфигурацию.")
+                        message: "Добавьте подписку, ссылку или конфигурацию."
                     )
-                    .foregroundStyle(.white)
                     .padding(.top, 60)
                 } else {
                     ForEach(filteredGroups) { group in
@@ -150,12 +149,11 @@ struct ServersView: View {
                 }
 
                 if store.state.subscriptions.isEmpty {
-                    ContentUnavailableView(
-                        "Нет подписок",
+                    EmptyStateView(
+                        title: "Нет подписок",
                         systemImage: "link",
-                        description: Text("Добавьте HTTPS-ссылку подписки.")
+                        message: "Добавьте HTTPS-ссылку подписки."
                     )
-                    .foregroundStyle(.white)
                     .padding(.top, 60)
                 }
             }
