@@ -215,7 +215,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         lastPathSignature = nil
     }
 
-    private func pathSignature(_ path: NWPath) -> String {
+    private func pathSignature(_ path: Network.NWPath) -> String {
         let interfaces = path.availableInterfaces
             .map { "\($0.name)#\($0.index)-\($0.type)" }
             .sorted()
