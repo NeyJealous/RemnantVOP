@@ -23,6 +23,12 @@ targets:
     sources:
       - path: App
       - path: Core
+        excludes:
+          - Engine/**
+          - AWG/AWGQuickConfigParser.swift
+          - SingBox/SingBoxRuntime.swift
+          - SingBox/SingBoxPlatformInterface.swift
+          - SingBox/SingBoxCommandHandler.swift
     info:
       path: App/Info.plist
       properties:
@@ -35,36 +41,61 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP
         CODE_SIGN_ENTITLEMENTS: App/RemnantVOP.entitlements
     dependencies:
-      - framework: Vendor/Libbox.xcframework
-        embed: false
-      - package: WireGuardKit
-        product: WireGuardKit
-      - target: RemnantVOPPacketTunnel
+      - target: RemnantVOPAWGTunnel
+      - target: RemnantVOPHysteriaTunnel
 
-  RemnantVOPPacketTunnel:
+  RemnantVOPAWGTunnel:
     type: app-extension
     platform: iOS
     sources:
-      - path: PacketTunnel
+      - path: Extensions/AWG
       - path: Core
+        excludes:
+          - Engine/**
+          - SingBox/**
     info:
-      path: PacketTunnel/Info.plist
+      path: Extensions/AWG/Info.plist
       properties:
-        CFBundleDisplayName: RemnantVOP Tunnel
+        CFBundleDisplayName: RemnantVOP AWG
         NSExtension:
           NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
           NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).PacketTunnelProvider"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP.PacketTunnel
-        CODE_SIGN_ENTITLEMENTS: PacketTunnel/PacketTunnel.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP.AWGTunnel
+        CODE_SIGN_ENTITLEMENTS: Extensions/AWG/AWGTunnel.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+    dependencies:
+      - package: WireGuardKit
+        product: WireGuardKit
+
+  RemnantVOPHysteriaTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Extensions/Hysteria
+      - path: Core
+        excludes:
+          - AWG/AWGQuickConfigParser.swift
+          - Engine/AWGEngine.swift
+          - Engine/EngineFactory.swift
+    info:
+      path: Extensions/Hysteria/Info.plist
+      properties:
+        CFBundleDisplayName: RemnantVOP Hysteria2
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).PacketTunnelProvider"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP.HysteriaTunnel
+        CODE_SIGN_ENTITLEMENTS: Extensions/Hysteria/HysteriaTunnel.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
     dependencies:
       - framework: Vendor/Libbox.xcframework
         embed: false
-      - package: WireGuardKit
-        product: WireGuardKit
 
   RemnantVOPTests:
     type: bundle.unit-test
