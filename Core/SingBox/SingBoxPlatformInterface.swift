@@ -27,7 +27,8 @@ final class SingBoxPlatformInterface: NSObject, LibboxPlatformInterfaceProtocol 
             let iterator = try options.getDNSServerAddress()
             var servers: [String] = []
             while iterator.hasNext() {
-                if let server = iterator.next(), !server.isEmpty {
+                let server = iterator.next()
+                if !server.isEmpty {
                     servers.append(server)
                 }
             }
