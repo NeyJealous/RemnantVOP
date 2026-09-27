@@ -13,7 +13,22 @@ final class SingBoxEngine: VPNEngine {
     }
 
     func start(profile: VPNProfile, provider: NEPacketTunnelProvider) async throws {
-        let config = try SingBoxConfigurationBuilder.build(for: profile)
+        try await start(
+            profile: profile,
+            provider: provider,
+            runtimeOptions: .standard
+        )
+    }
+
+    func start(
+        profile: VPNProfile,
+        provider: NEPacketTunnelProvider,
+        runtimeOptions: TunnelRuntimeOptions
+    ) async throws {
+        let config = try SingBoxConfigurationBuilder.build(
+            for: profile,
+            runtimeOptions: runtimeOptions
+        )
 
         var validationError: NSError?
         LibboxCheckConfig(config, &validationError)

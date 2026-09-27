@@ -14,6 +14,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
 
         let profile: VPNProfile
+        let runtimeOptions = TunnelConfigurationStore.runtimeOptions(
+            from: tunnelProtocol.providerConfiguration
+        )
         do {
             profile = try TunnelConfigurationStore.profile(from: tunnelProtocol.providerConfiguration)
             guard profile.protocolType == .hysteria2 else {
@@ -29,7 +32,11 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
         Task {
             do {
-                try await engine.start(profile: profile, provider: self)
+                try await engine.start(
+                    profile: profile,
+                    provider: self,
+                    runtimeOptions: runtimeOptions
+                )
                 completionHandler(nil)
             } catch {
                 self.engine = nil

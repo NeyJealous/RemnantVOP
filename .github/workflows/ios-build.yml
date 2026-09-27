@@ -26,27 +26,41 @@ jobs:
         with:
           go-version: '1.26.x'
 
-      - name: Cache sing-box Libbox
-        id: cache-libbox
-        uses: actions/cache@v4
+      - name: Restore sing-box Libbox cache
+        id: restore-libbox
+        uses: actions/cache/restore@v4
         with:
           path: Vendor/Libbox.xcframework
           key: libbox-ios-v1.14.1-1ac1a339-go1.26-${{ runner.os }}
 
       - name: Build sing-box Libbox
-        if: steps.cache-libbox.outputs.cache-hit != 'true'
+        if: steps.restore-libbox.outputs.cache-hit != 'true'
         run: ./scripts/build-singbox-libbox.sh
 
-      - name: Cache libXray
-        id: cache-libxray
-        uses: actions/cache@v4
+      - name: Save sing-box Libbox cache
+        if: steps.restore-libbox.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: Vendor/Libbox.xcframework
+          key: libbox-ios-v1.14.1-1ac1a339-go1.26-${{ runner.os }}
+
+      - name: Restore libXray cache
+        id: restore-libxray
+        uses: actions/cache/restore@v4
         with:
           path: Vendor/LibXray.xcframework
           key: libxray-ios-v26.9.9-cgo-${{ runner.os }}
 
       - name: Fetch libXray
-        if: steps.cache-libxray.outputs.cache-hit != 'true'
+        if: steps.restore-libxray.outputs.cache-hit != 'true'
         run: ./scripts/fetch-libxray.sh
+
+      - name: Save libXray cache
+        if: steps.restore-libxray.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: Vendor/LibXray.xcframework
+          key: libxray-ios-v26.9.9-cgo-${{ runner.os }}
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -67,6 +81,7 @@ jobs:
       - name: Build Release without signing
         run: |
           set -o pipefail
+          mkdir -p build
           xcodebuild \
             -project RemnantVOP.xcodeproj \
             -scheme RemnantVOP \

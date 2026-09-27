@@ -62,9 +62,16 @@ final class VPNManager: ObservableObject {
         let provider = NETunnelProviderProtocol()
         provider.providerBundleIdentifier = providerID
         provider.serverAddress = profile.name
-        provider.providerConfiguration = try TunnelConfigurationStore.providerConfiguration(for: profile)
+        let runtimeOptions = TunnelRuntimeOptions(
+            dnsServers: settings.dnsServers,
+            diagnosticsLogging: settings.diagnosticsLogging
+        )
+        provider.providerConfiguration = try TunnelConfigurationStore.providerConfiguration(
+            for: profile,
+            runtimeOptions: runtimeOptions
+        )
         provider.includeAllNetworks = settings.killSwitch
-        provider.excludeLocalNetworks = settings.killSwitch
+        provider.excludeLocalNetworks = !settings.killSwitch
 
         target.protocolConfiguration = provider
         target.localizedDescription = "Remnant VPN · \(profile.name)"

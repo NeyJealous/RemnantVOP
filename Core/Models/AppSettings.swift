@@ -56,6 +56,21 @@ struct AppSettings: Codable, Equatable, Sendable {
     var hideConfigurationSecrets: Bool
     var diagnosticsLogging: Bool
 
+    var dnsServers: [String] {
+        switch dnsMode {
+        case .automatic, .system:
+            return []
+        case .cloudflare:
+            return ["1.1.1.1", "1.0.0.1"]
+        case .google:
+            return ["8.8.8.8", "8.8.4.4"]
+        case .adguard:
+            return ["94.140.14.14", "94.140.15.15"]
+        case .custom:
+            return customDNSServers
+        }
+    }
+
     static let standard = AppSettings(
         protocolMode: .automatic,
         fallbackOrder: [.vless, .hysteria2, .amneziaWG],

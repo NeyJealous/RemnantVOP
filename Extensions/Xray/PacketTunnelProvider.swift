@@ -15,6 +15,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
 
         let profile: VPNProfile
+        let runtimeOptions = TunnelConfigurationStore.runtimeOptions(
+            from: tunnelProtocol.providerConfiguration
+        )
         do {
             profile = try TunnelConfigurationStore.profile(from: tunnelProtocol.providerConfiguration)
             guard profile.protocolType == .vless else {
@@ -25,7 +28,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
             return
         }
 
-        let settings = makeNetworkSettings()
+        let settings = makeNetworkSettings(runtimeOptions: runtimeOptions)
 
         setTunnelNetworkSettings(settings) { [weak self] error in
             guard let self else {
@@ -44,7 +47,8 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
 
                 let config = try XrayConfigurationBuilder.build(
                     profile: profile,
-                    tunnelFileDescriptor: fd
+                    tunnelFileDescriptor: fd,
+                    runtimeOptions: runtimeOptions
                 )
 
                 _ = try XrayBridge.invoke(
@@ -72,7 +76,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         completionHandler()
     }
 
-    private func makeNetworkSettings() -> NEPacketTunnelNetworkSettings {
+    private func makeNetworkSettings(
+        runtimeOptions: TunnelRuntimeOptions
+    ) -> NEPacketTunnelNetworkSettings {
         let settings = NEPacketTunnelNetworkSettings(tunnelRemoteAddress: "127.0.0.1")
         settings.mtu = 1400
 
@@ -90,7 +96,10 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         ipv6.includedRoutes = [.default()]
         settings.ipv6Settings = ipv6
 
-        settings.dnsSettings = NEDNSSettings(servers: ["1.1.1.1", "8.8.8.8"])
+        let dnsServers = runtimeOptions.dnsServers.isEmpty
+            ? ["1.1.1.1", "8.8.8.8"]
+            : runtimeOptions.dnsServers
+        settings.dnsSettings = NEDNSSettings(servers: dnsServers)
         return settings
     }
 

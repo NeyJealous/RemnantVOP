@@ -1,7 +1,11 @@
 import Foundation
 
 enum XrayConfigurationBuilder {
-    static func build(profile: VPNProfile, tunnelFileDescriptor: Int32) throws -> String {
+    static func build(
+        profile: VPNProfile,
+        tunnelFileDescriptor: Int32,
+        runtimeOptions: TunnelRuntimeOptions = .standard
+    ) throws -> String {
         guard profile.protocolType == .vless else {
             throw XrayConfigurationError.wrongProtocol
         }
@@ -37,18 +41,19 @@ enum XrayConfigurationBuilder {
             "outboundTag": defaultOutbound
         ])
 
+        let dnsServers = runtimeOptions.dnsServers.isEmpty
+            ? ["1.1.1.1", "8.8.8.8"]
+            : runtimeOptions.dnsServers
+
         let root: [String: Any] = [
             "log": [
-                "loglevel": "warning"
+                "loglevel": runtimeOptions.diagnosticsLogging ? "debug" : "warning"
             ],
             "env": [
                 "xray.tun.fd": String(tunnelFileDescriptor)
             ],
             "dns": [
-                "servers": [
-                    "1.1.1.1",
-                    "8.8.8.8"
-                ],
+                "servers": dnsServers,
                 "queryStrategy": "UseIP"
             ],
             "inbounds": [[

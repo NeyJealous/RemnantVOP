@@ -20,8 +20,18 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
                 throw AWGPacketTunnelError.wrongProtocol
             }
 
+            let runtimeOptions = TunnelConfigurationStore.runtimeOptions(
+                from: tunnelProtocol.providerConfiguration
+            )
             let quickConfig = try AmneziaAWGConfigExtractor.configurationText(from: profile)
-            let configuration = try AWGQuickConfigParser.parse(quickConfig, name: profile.name)
+            let effectiveConfig = overridingDNS(
+                in: quickConfig,
+                servers: runtimeOptions.dnsServers
+            )
+            let configuration = try AWGQuickConfigParser.parse(
+                effectiveConfig,
+                name: profile.name
+            )
 
             let adapter = WireGuardAdapter(with: self) { level, message in
                 #if DEBUG
@@ -39,6 +49,48 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         } catch {
             completionHandler(error)
         }
+    }
+
+    private func overridingDNS(in source: String, servers: [String]) -> String {
+        guard !servers.isEmpty else { return source }
+
+        var output: [String] = []
+        var inInterface = false
+        var inserted = false
+
+        for line in source.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if trimmed.lowercased() == "[interface]" {
+                inInterface = true
+                output.append(line)
+                continue
+            }
+
+            if trimmed.lowercased() == "[peer]" {
+                if inInterface && !inserted {
+                    output.append("DNS = \(servers.joined(separator: ", "))")
+                    inserted = true
+                }
+                inInterface = false
+                output.append(line)
+                continue
+            }
+
+            if inInterface,
+               trimmed.lowercased().hasPrefix("dns"),
+               trimmed.contains("=") {
+                continue
+            }
+
+            output.append(line)
+        }
+
+        if inInterface && !inserted {
+            output.append("DNS = \(servers.joined(separator: ", "))")
+        }
+
+        return output.joined(separator: "\n")
     }
 
     override func stopTunnel(
