@@ -16,17 +16,17 @@ enum MihomoBridge {
 
     static func start(configuration: String) throws {
         var error: NSError?
-        let ok = LibmihomoStartWithYAML(configuration, &error)
+        let ok = LibmihomoStartRemnant(configuration, &error)
         guard ok else {
-            throw error ?? MihomoBridgeError.operationFailed("StartWithYAML")
+            throw error ?? MihomoBridgeError.operationFailed("StartRemnant")
         }
     }
 
     static func reload(configuration: String) throws {
         var error: NSError?
-        let ok = LibmihomoReloadWithYAML(configuration, &error)
+        let ok = LibmihomoReloadRemnant(configuration, &error)
         guard ok else {
-            throw error ?? MihomoBridgeError.operationFailed("ReloadWithYAML")
+            throw error ?? MihomoBridgeError.operationFailed("ReloadRemnant")
         }
     }
 

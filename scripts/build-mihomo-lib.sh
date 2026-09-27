@@ -27,7 +27,7 @@ import (
     "github.com/metacubex/mihomo/hub"
 )
 
-func StartWithYAML(yamlConfig string) error {
+func StartRemnant(yamlConfig string) error {
     startMu.Lock()
     defer startMu.Unlock()
 
@@ -52,7 +52,7 @@ func StartWithYAML(yamlConfig string) error {
     return nil
 }
 
-func ReloadWithYAML(yamlConfig string) error {
+func ReloadRemnant(yamlConfig string) error {
     startMu.Lock()
     defer startMu.Unlock()
 
