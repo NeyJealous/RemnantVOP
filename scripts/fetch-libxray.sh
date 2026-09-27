@@ -21,10 +21,11 @@ curl --fail --location --retry 3 "$URL" --output "$TMP_DIR/$ARCHIVE"
 echo "$SHA256  $TMP_DIR/$ARCHIVE" | shasum -a 256 -c -
 
 unzip -q "$TMP_DIR/$ARCHIVE" -d "$TMP_DIR/unpacked"
-SOURCE="$TMP_DIR/unpacked/apple-cgo/LibXray.xcframework"
+SOURCE="$(find "$TMP_DIR/unpacked" -type d -name 'LibXray.xcframework' -print -quit)"
 
-if [[ ! -d "$SOURCE" ]]; then
+if [[ -z "$SOURCE" || ! -d "$SOURCE" ]]; then
   echo "LibXray.xcframework not found in release archive"
+  find "$TMP_DIR/unpacked" -maxdepth 3 -print
   exit 1
 fi
 
