@@ -14,7 +14,11 @@ struct ProtocolBadge: View {
 }
 
 struct RemnantCard<Content: View>: View {
-    @ViewBuilder var content: Content
+    private let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
 
     var body: some View {
         content
@@ -84,5 +88,28 @@ extension RoutingProfile.Mode {
         case .vpnOnlyForRules: return "Только выбранные через VPN"
         case .bypassRules: return "Исключения напрямую"
         }
+    }
+}
+
+
+struct EmptyStateView: View {
+    let title: String
+    let systemImage: String
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.system(size: 44))
+                .foregroundStyle(RemnantTheme.muted)
+            Text(title)
+                .font(.headline)
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(RemnantTheme.muted)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(40)
     }
 }
