@@ -35,6 +35,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP
         CODE_SIGN_ENTITLEMENTS: App/RemnantVOP.entitlements
     dependencies:
+      - framework: Vendor/Libbox.xcframework
+        embed: false
       - package: WireGuardKit
         product: WireGuardKit
       - target: RemnantVOPPacketTunnel
@@ -59,6 +61,8 @@ targets:
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
     dependencies:
+      - framework: Vendor/Libbox.xcframework
+        embed: false
       - package: WireGuardKit
         product: WireGuardKit
 

@@ -6,4 +6,7 @@ build/
 RemnantVOP.xcodeproj/
 .build/
 .swiftpm/xcode/package.xcworkspace/xcuserdata/
+.spm/
+.deps/
+Vendor/Libbox.xcframework/
 .DS_Store
