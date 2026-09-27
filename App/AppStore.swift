@@ -32,18 +32,33 @@ final class AppStore: ObservableObject {
     }
 
     var preferredProfile: VPNProfile? {
+        connectionCandidates.first
+    }
+
+    var connectionCandidates: [VPNProfile] {
+        let grouped = matchingProfiles(for: selectedProfile)
+
         if let forced = state.settings.protocolMode.protocolType {
-            return matchingProfiles(for: selectedProfile).first(where: { $0.protocolType == forced })
-                ?? state.profiles.first(where: { $0.protocolType == forced })
+            if let local = grouped.first(where: { $0.protocolType == forced }) {
+                return [local]
+            }
+            if let global = state.profiles.first(where: { $0.protocolType == forced }) {
+                return [global]
+            }
+            return []
         }
 
-        let candidates = matchingProfiles(for: selectedProfile)
+        var ordered: [VPNProfile] = []
         for kind in state.settings.fallbackOrder {
-            if let match = candidates.first(where: { $0.protocolType == kind }) {
-                return match
+            if let match = grouped.first(where: { $0.protocolType == kind }) {
+                ordered.append(match)
             }
         }
-        return selectedProfile ?? state.profiles.first
+
+        if ordered.isEmpty, let selectedProfile {
+            return [selectedProfile]
+        }
+        return ordered
     }
 
     func selectProfile(_ profile: VPNProfile) {

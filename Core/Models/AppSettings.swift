@@ -25,7 +25,7 @@ enum ProtocolSelectionMode: String, Codable, CaseIterable, Hashable, Sendable {
     }
 }
 
-enum DNSMode: String, Codable, CaseIterable, Sendable {
+enum DNSMode: String, Codable, CaseIterable, Hashable, Sendable {
     case automatic
     case system
     case cloudflare

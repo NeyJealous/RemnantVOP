@@ -100,8 +100,59 @@ final class VPNManager: ObservableObject {
         }
     }
 
+    func connectFirstAvailable(
+        _ profiles: [VPNProfile],
+        settings: AppSettings
+    ) async throws {
+        guard !profiles.isEmpty else {
+            throw VPNFallbackError.noProfiles
+        }
+
+        var failures: [String] = []
+
+        for profile in profiles {
+            do {
+                try await connect(profile, settings: settings)
+                try await waitForConnection(timeout: 12)
+                return
+            } catch {
+                failures.append("\(profile.protocolType.displayName): \(error.localizedDescription)")
+                manager?.connection.stopVPNTunnel()
+                try? await Task.sleep(nanoseconds: 350_000_000)
+            }
+        }
+
+        let error = VPNFallbackError.allFailed(failures)
+        lastError = error.localizedDescription
+        throw error
+    }
+
     func disconnect() {
         manager?.connection.stopVPNTunnel()
+    }
+
+    private func waitForConnection(timeout: TimeInterval) async throws {
+        let startedAt = Date()
+        let grace: TimeInterval = 1.25
+
+        while Date().timeIntervalSince(startedAt) < timeout {
+            switch status {
+            case .connected:
+                return
+            case .invalid, .disconnected:
+                if Date().timeIntervalSince(startedAt) >= grace {
+                    throw VPNFallbackError.connectionRejected
+                }
+            case .connecting, .reasserting, .disconnecting:
+                break
+            @unknown default:
+                break
+            }
+
+            try await Task.sleep(nanoseconds: 250_000_000)
+        }
+
+        throw VPNFallbackError.timeout
     }
 
     private func observe(_ connection: NEVPNConnection) {
@@ -176,6 +227,27 @@ extension NEVPNStatus {
         case .reasserting: return "Восстановление соединения…"
         case .disconnecting: return "Отключение…"
         @unknown default: return "Неизвестное состояние"
+        }
+    }
+}
+
+
+enum VPNFallbackError: LocalizedError {
+    case noProfiles
+    case connectionRejected
+    case timeout
+    case allFailed([String])
+
+    var errorDescription: String? {
+        switch self {
+        case .noProfiles:
+            return "Нет доступных VPN-профилей."
+        case .connectionRejected:
+            return "VPN-ядро завершило подключение."
+        case .timeout:
+            return "VPN не успел подключиться."
+        case .allFailed(let failures):
+            return "Не удалось подключиться автоматически. " + failures.joined(separator: " · ")
         }
     }
 }

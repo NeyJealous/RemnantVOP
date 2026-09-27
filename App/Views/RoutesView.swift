@@ -112,11 +112,7 @@ private struct AddRouteRuleView: View {
     }
 }
 
-extension RoutingRule.Kind: CaseIterable {
-    static var allCases: [RoutingRule.Kind] {
-        [.domain, .domainSuffix, .cidr, .ip]
-    }
-
+extension RoutingRule.Kind {
     var title: String {
         switch self {
         case .domain: return "Домен"
@@ -127,11 +123,7 @@ extension RoutingRule.Kind: CaseIterable {
     }
 }
 
-extension RoutingRule.Action: CaseIterable {
-    static var allCases: [RoutingRule.Action] {
-        [.vpn, .direct, .block]
-    }
-
+extension RoutingRule.Action {
     var title: String {
         switch self {
         case .vpn: return "Через VPN"

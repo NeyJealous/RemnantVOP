@@ -103,7 +103,7 @@ struct HomeView: View {
                     .foregroundStyle(.white)
                 }
             }
-            .disabled(isWorking || store.preferredProfile == nil)
+            .disabled(isWorking || store.connectionCandidates.isEmpty)
 
             if let profile = store.preferredProfile {
                 Text("\(profile.name) • \(profile.protocolType.displayName)")
@@ -266,7 +266,14 @@ struct HomeView: View {
         defer { isWorking = false }
 
         do {
-            try await vpn.connect(profile, settings: store.state.settings)
+            if store.state.settings.protocolMode == .automatic {
+                try await vpn.connectFirstAvailable(
+                    store.connectionCandidates,
+                    settings: store.state.settings
+                )
+            } else {
+                try await vpn.connect(profile, settings: store.state.settings)
+            }
         } catch {
             vpn.lastError = error.localizedDescription
         }
