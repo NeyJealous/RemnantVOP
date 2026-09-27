@@ -1,6 +1,6 @@
 import Foundation
 
-enum ProtocolSelectionMode: String, Codable, CaseIterable, Sendable {
+enum ProtocolSelectionMode: String, Codable, CaseIterable, Hashable, Sendable {
     case automatic
     case vless
     case hysteria2

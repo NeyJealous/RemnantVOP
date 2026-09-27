@@ -1,7 +1,7 @@
 import Foundation
 
 struct RoutingProfile: Codable, Equatable, Sendable {
-    enum Mode: String, Codable, Sendable {
+    enum Mode: String, Codable, CaseIterable, Hashable, Sendable {
         case fullTunnel
         case vpnOnlyForRules
         case bypassRules
@@ -14,14 +14,14 @@ struct RoutingProfile: Codable, Equatable, Sendable {
 }
 
 struct RoutingRule: Codable, Equatable, Identifiable, Sendable {
-    enum Kind: String, Codable, Sendable {
+    enum Kind: String, Codable, CaseIterable, Hashable, Sendable {
         case domain
         case domainSuffix
         case cidr
         case ip
     }
 
-    enum Action: String, Codable, Sendable {
+    enum Action: String, Codable, CaseIterable, Hashable, Sendable {
         case vpn
         case direct
         case block

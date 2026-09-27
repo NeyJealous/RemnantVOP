@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation\nimport SwiftUI
 
 struct StatisticsView: View {
     @EnvironmentObject private var vpn: VPNManager

@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation\nimport SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject private var store: AppStore
