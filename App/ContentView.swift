@@ -1,53 +1,104 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var importText = ""
-    @State private var resultText = "Готов к импорту профиля или подписки"
-
-    private let importer = ProfileImporter()
+    @EnvironmentObject private var store: AppStore
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Импорт") {
-                    TextEditor(text: $importText)
-                        .frame(minHeight: 130)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+        Group {
+            if store.state.hasCompletedOnboarding {
+                MainTabView()
+            } else {
+                OnboardingView()
+            }
+        }
+        .background(RemnantTheme.background.ignoresSafeArea())
+    }
+}
 
-                    Button("Распознать") {
-                        importConfiguration()
+private struct OnboardingView: View {
+    @EnvironmentObject private var store: AppStore
+    @State private var showImport = false
+
+    var body: some View {
+        ZStack {
+            RemnantTheme.background.ignoresSafeArea()
+
+            VStack(spacing: 28) {
+                Spacer()
+
+                Image(systemName: "shield.lefthalf.filled")
+                    .font(.system(size: 74, weight: .semibold))
+                    .foregroundStyle(RemnantTheme.accent)
+
+                VStack(spacing: 10) {
+                    Text("Remnant VPN")
+                        .font(.largeTitle.bold())
+
+                    Text("Один клиент. Три протокола.")
+                        .font(.headline)
+                        .foregroundStyle(RemnantTheme.muted)
+                }
+
+                HStack(spacing: 10) {
+                    ProtocolBadge(title: "VLESS")
+                    ProtocolBadge(title: "Hysteria2")
+                    ProtocolBadge(title: "AWG 3.1")
+                }
+
+                Spacer()
+
+                VStack(spacing: 12) {
+                    Button {
+                        store.completeOnboarding()
+                        showImport = true
+                    } label: {
+                        Text("Начать")
+                            .frame(maxWidth: .infinity)
                     }
-                    .disabled(importText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
+                    .buttonStyle(RemnantPrimaryButtonStyle())
 
-                Section("Результат") {
-                    Text(resultText)
-                        .font(.footnote)
-                        .textSelection(.enabled)
-                }
-
-                Section("Phase 0") {
-                    Label("AmneziaWG 3.1 — адаптер подготовлен", systemImage: "shield")
-                    Label("VLESS — адаптер sing-box подготовлен", systemImage: "point.3.connected.trianglepath.dotted")
-                    Label("Hysteria2 — адаптер sing-box подготовлен", systemImage: "bolt.horizontal")
-                    Label("Packet Tunnel Extension создан", systemImage: "network")
+                    Button("Пропустить") {
+                        store.completeOnboarding()
+                    }
+                    .foregroundStyle(RemnantTheme.muted)
                 }
             }
-            .navigationTitle("RemnantVOP")
+            .padding(24)
+        }
+        .sheet(isPresented: $showImport) {
+            ImportSheet()
         }
     }
+}
 
-    private func importConfiguration() {
-        do {
-            switch try importer.parse(importText) {
-            case .profile(let profile):
-                resultText = "Профиль: \(profile.name)\nПротокол: \(profile.protocolType.displayName)"
-            case .subscription(let url):
-                resultText = "Подписка: \(url.absoluteString)"
+struct MainTabView: View {
+    var body: some View {
+        TabView {
+            NavigationStack {
+                HomeView()
             }
-        } catch {
-            resultText = error.localizedDescription
+            .tabItem { Label("Главная", systemImage: "shield.fill") }
+
+            NavigationStack {
+                ServersView()
+            }
+            .tabItem { Label("Серверы", systemImage: "server.rack") }
+
+            NavigationStack {
+                RoutesView()
+            }
+            .tabItem { Label("Маршруты", systemImage: "arrow.triangle.branch") }
+
+            NavigationStack {
+                StatisticsView()
+            }
+            .tabItem { Label("Статистика", systemImage: "chart.xyaxis.line") }
+
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem { Label("Настройки", systemImage: "gearshape.fill") }
         }
+        .tint(RemnantTheme.accent)
     }
 }
