@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - release-v1-rc1
+      - release-v1-rc1\n      - release-v1-rc2
   pull_request:
   workflow_dispatch:
 
@@ -101,16 +101,16 @@ jobs:
           mkdir -p build/Payload
           cp -R "$APP" build/Payload/
           cd build
-          /usr/bin/zip -qry RemnantVOP-1.0.0-rc1-unsigned.ipa Payload
+          /usr/bin/zip -qry RemnantVOP-1.0.0-rc2-unsigned.ipa Payload
           cd ..
-          shasum -a 256 build/RemnantVOP-1.0.0-rc1-unsigned.ipa > build/SHA256SUMS.txt
+          shasum -a 256 build/RemnantVOP-1.0.0-rc2-unsigned.ipa > build/SHA256SUMS.txt
 
       - name: Upload release candidate
         uses: actions/upload-artifact@v4
         with:
-          name: RemnantVOP-1.0.0-rc1-unsigned
+          name: RemnantVOP-1.0.0-rc2-unsigned
           path: |
-            build/RemnantVOP-1.0.0-rc1-unsigned.ipa
+            build/RemnantVOP-1.0.0-rc2-unsigned.ipa
             build/SHA256SUMS.txt
             docs/SIGNING.md
           if-no-files-found: error

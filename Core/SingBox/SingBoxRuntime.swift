@@ -7,6 +7,7 @@ final class SingBoxRuntime {
     private var platformInterface: SingBoxPlatformInterface?
     private var commandServer: LibboxCommandServer?
     private var configContent: String?
+    private var isStopping = false
 
     init(provider: NEPacketTunnelProvider) {
         self.provider = provider
@@ -23,7 +24,7 @@ final class SingBoxRuntime {
         setup.basePath = directories.base.path
         setup.workingPath = directories.working.path
         setup.tempPath = directories.temp.path
-        setup.logMaxLines = 2000
+        setup.logMaxLines = 3000
         setup.debug = false
         setup.crashReportSource = "NetworkExtension"
         setup.appVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
@@ -35,6 +36,8 @@ final class SingBoxRuntime {
         if let setupError {
             throw setupError
         }
+
+        LibboxPromoteOOMDraft()
 
         let platform = SingBoxPlatformInterface(provider: provider)
         platform.runtime = self
@@ -58,21 +61,40 @@ final class SingBoxRuntime {
         self.configContent = configContent
         self.platformInterface = platform
         self.commandServer = server
+        self.isStopping = false
     }
 
-    func stop() {
-        if let server = commandServer {
+    func stop() async {
+        guard !isStopping else { return }
+        isStopping = true
+
+        let server = commandServer
+
+        if let server {
             try? server.closeService()
-            server.close()
         }
+
         platformInterface?.reset()
+
+        if server != nil {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            server?.close()
+        }
+
         commandServer = nil
         platformInterface = nil
         configContent = nil
+        isStopping = false
+    }
+
+    func coreRequestedStop() {
+        platformInterface?.reset()
     }
 
     func reload() throws {
-        guard let server = commandServer, let configContent else {
+        guard !isStopping,
+              let server = commandServer,
+              let configContent else {
             throw SingBoxRuntimeError.notRunning
         }
         try server.startOrReloadService(configContent, options: LibboxOverrideOptions())

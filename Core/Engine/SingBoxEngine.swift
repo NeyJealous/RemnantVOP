@@ -25,6 +25,11 @@ final class SingBoxEngine: VPNEngine {
         provider: NEPacketTunnelProvider,
         runtimeOptions: TunnelRuntimeOptions
     ) async throws {
+        if let runtime {
+            await runtime.stop()
+            self.runtime = nil
+        }
+
         let config = try SingBoxConfigurationBuilder.build(
             for: profile,
             runtimeOptions: runtimeOptions
@@ -42,7 +47,8 @@ final class SingBoxEngine: VPNEngine {
     }
 
     func stop() async {
-        runtime?.stop()
-        runtime = nil
+        guard let runtime else { return }
+        await runtime.stop()
+        self.runtime = nil
     }
 }

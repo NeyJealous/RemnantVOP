@@ -50,9 +50,7 @@ final class VPNManager: ObservableObject {
         lastError = nil
 
         let all = try await loadAll()
-        for item in all where item.connection.status != .disconnected && item.connection.status != .invalid {
-            item.connection.stopVPNTunnel()
-        }
+        try await stopActiveConnectionsAndWait(all)
 
         let providerID = VPNProviderDescriptor.bundleIdentifier(for: profile.protocolType)
         let target = all.first(where: {
@@ -117,8 +115,10 @@ final class VPNManager: ObservableObject {
                 return
             } catch {
                 failures.append("\(profile.protocolType.displayName): \(error.localizedDescription)")
-                manager?.connection.stopVPNTunnel()
-                try? await Task.sleep(nanoseconds: 350_000_000)
+                if let connection = manager?.connection {
+                    connection.stopVPNTunnel()
+                    try? await waitUntilDisconnected(connection, timeout: 6)
+                }
             }
         }
 
@@ -129,6 +129,44 @@ final class VPNManager: ObservableObject {
 
     func disconnect() {
         manager?.connection.stopVPNTunnel()
+    }
+
+    private func stopActiveConnectionsAndWait(
+        _ managers: [NETunnelProviderManager]
+    ) async throws {
+        let active = managers.filter {
+            $0.connection.status != .disconnected && $0.connection.status != .invalid
+        }
+
+        for item in active {
+            item.connection.stopVPNTunnel()
+        }
+
+        for item in active {
+            try await waitUntilDisconnected(item.connection, timeout: 6)
+        }
+    }
+
+    private func waitUntilDisconnected(
+        _ connection: NEVPNConnection,
+        timeout: TimeInterval
+    ) async throws {
+        let startedAt = Date()
+
+        while Date().timeIntervalSince(startedAt) < timeout {
+            switch connection.status {
+            case .disconnected, .invalid:
+                return
+            case .connecting, .connected, .reasserting, .disconnecting:
+                break
+            @unknown default:
+                break
+            }
+
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+
+        throw VPNFallbackError.previousTunnelStillStopping
     }
 
     private func waitForConnection(timeout: TimeInterval) async throws {
@@ -236,6 +274,7 @@ enum VPNFallbackError: LocalizedError {
     case noProfiles
     case connectionRejected
     case timeout
+    case previousTunnelStillStopping
     case allFailed([String])
 
     var errorDescription: String? {
@@ -246,6 +285,8 @@ enum VPNFallbackError: LocalizedError {
             return "VPN-ядро завершило подключение."
         case .timeout:
             return "VPN не успел подключиться."
+        case .previousTunnelStillStopping:
+            return "Предыдущее VPN-соединение ещё завершает работу. Повтори подключение через несколько секунд."
         case .allFailed(let failures):
             return "Не удалось подключиться автоматически. " + failures.joined(separator: " · ")
         }

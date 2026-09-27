@@ -3,7 +3,10 @@ import Libbox
 
 extension SingBoxPlatformInterface: LibboxCommandServerHandlerProtocol {
     func serviceStop() throws {
-        runtime?.stop()
+        // Do not call SingBoxRuntime.stop() from this callback. closeService()
+        // may invoke the command handler, and recursively closing the command
+        // server leaves the extension in a state where the next start fails.
+        runtime?.coreRequestedStop()
     }
 
     func serviceReload() throws {
@@ -15,7 +18,7 @@ extension SingBoxPlatformInterface: LibboxCommandServerHandlerProtocol {
     }
 
     func setSystemProxyEnabled(_ isEnabled: Bool) throws {
-        // System HTTP proxy is intentionally not used by RemnantVOP.
+        // System HTTP proxy is intentionally not used by Remnant VPN.
     }
 
     func triggerNativeCrash() throws {
