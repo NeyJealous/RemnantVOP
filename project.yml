@@ -109,6 +109,8 @@ targets:
     dependencies:
       - framework: Vendor/Libbox.xcframework
         embed: false
+      - sdk: UIKit.framework
+      - sdk: libresolv.tbd
 
   RemnantVOPXrayTunnel:
     type: app-extension
