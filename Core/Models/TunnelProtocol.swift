@@ -1,6 +1,6 @@
 import Foundation
 
-enum TunnelProtocol: String, Codable, CaseIterable, Sendable {
+enum TunnelProtocol: String, Codable, CaseIterable, Hashable, Sendable {
     case amneziaWG
     case vless
     case hysteria2
