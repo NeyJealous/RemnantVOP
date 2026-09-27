@@ -310,7 +310,7 @@ final class SingBoxPlatformInterface: NSObject, LibboxPlatformInterfaceProtocol 
         networkSettings = nil
     }
 
-    fileprivate func platformError(_ message: String) -> NSError {
+    func platformError(_ message: String) -> NSError {
         NSError(
             domain: "RemnantVOP.SingBoxPlatform",
             code: 1,

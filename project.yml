@@ -10,6 +10,8 @@ settings:
   base:
     SWIFT_VERSION: "5.10"
     IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 1.0.0
 
 packages:
   WireGuardKit:
@@ -24,15 +26,20 @@ targets:
       - path: App
       - path: Core
         excludes:
+          - AWG/**
           - Engine/**
-          - AWG/AWGQuickConfigParser.swift
           - SingBox/SingBoxRuntime.swift
           - SingBox/SingBoxPlatformInterface.swift
           - SingBox/SingBoxCommandHandler.swift
+          - Xray/**
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: RemnantVOP
+        CFBundleDisplayName: Remnant VPN
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSCameraUsageDescription: "Камера используется только для сканирования QR-кодов VPN-конфигураций."
+        NSFaceIDUsageDescription: "Face ID используется для защиты доступа к VPN-конфигурациям."
         UILaunchScreen: {}
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
@@ -43,20 +50,23 @@ targets:
     dependencies:
       - target: RemnantVOPAWGTunnel
       - target: RemnantVOPHysteriaTunnel
+      - target: RemnantVOPXrayTunnel
 
   RemnantVOPAWGTunnel:
     type: app-extension
     platform: iOS
     sources:
       - path: Extensions/AWG
-      - path: Core
-        excludes:
-          - Engine/**
-          - SingBox/**
+      - path: Core/AWG
+      - path: Core/Models
+      - path: Core/Routing
+      - path: Core/Tunnel
     info:
       path: Extensions/AWG/Info.plist
       properties:
-        CFBundleDisplayName: RemnantVOP AWG
+        CFBundleDisplayName: Remnant VPN AWG
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
           NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).PacketTunnelProvider"
@@ -75,15 +85,18 @@ targets:
     platform: iOS
     sources:
       - path: Extensions/Hysteria
-      - path: Core
-        excludes:
-          - AWG/AWGQuickConfigParser.swift
-          - Engine/AWGEngine.swift
-          - Engine/EngineFactory.swift
+      - path: Core/Engine/VPNEngine.swift
+      - path: Core/Engine/SingBoxEngine.swift
+      - path: Core/SingBox
+      - path: Core/Models
+      - path: Core/Routing
+      - path: Core/Tunnel
     info:
       path: Extensions/Hysteria/Info.plist
       properties:
-        CFBundleDisplayName: RemnantVOP Hysteria2
+        CFBundleDisplayName: Remnant VPN Hysteria2
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
           NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).PacketTunnelProvider"
@@ -95,6 +108,34 @@ targets:
         SKIP_INSTALL: YES
     dependencies:
       - framework: Vendor/Libbox.xcframework
+        embed: false
+
+  RemnantVOPXrayTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Extensions/Xray
+      - path: Core/Xray
+      - path: Core/Models
+      - path: Core/Routing
+      - path: Core/Tunnel
+    info:
+      path: Extensions/Xray/Info.plist
+      properties:
+        CFBundleDisplayName: Remnant VPN Xray
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).PacketTunnelProvider"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.neyjealous.RemnantVOP.XrayTunnel
+        CODE_SIGN_ENTITLEMENTS: Extensions/Xray/XrayTunnel.entitlements
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+    dependencies:
+      - framework: Vendor/LibXray.xcframework
         embed: false
 
   RemnantVOPTests:
