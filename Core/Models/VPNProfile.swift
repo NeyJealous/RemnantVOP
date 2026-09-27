@@ -14,6 +14,7 @@ struct VPNProfile: Codable, Identifiable, Equatable, Sendable {
     var rawConfiguration: String
     var routing: RoutingProfile
     var source: Source
+    var subscriptionID: UUID?
 
     init(
         id: UUID = UUID(),
@@ -21,7 +22,8 @@ struct VPNProfile: Codable, Identifiable, Equatable, Sendable {
         protocolType: TunnelProtocol,
         rawConfiguration: String,
         routing: RoutingProfile = .fullTunnel,
-        source: Source
+        source: Source,
+        subscriptionID: UUID? = nil
     ) {
         self.id = id
         self.name = name
@@ -29,5 +31,6 @@ struct VPNProfile: Codable, Identifiable, Equatable, Sendable {
         self.rawConfiguration = rawConfiguration
         self.routing = routing
         self.source = source
+        self.subscriptionID = subscriptionID
     }
 }
