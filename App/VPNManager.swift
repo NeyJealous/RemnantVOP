@@ -194,7 +194,7 @@ final class VPNManager: ObservableObject {
     }
 
     private func save(_ manager: NETunnelProviderManager) async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             manager.saveToPreferences { error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -206,7 +206,7 @@ final class VPNManager: ObservableObject {
     }
 
     private func load(_ manager: NETunnelProviderManager) async throws {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             manager.loadFromPreferences { error in
                 if let error {
                     continuation.resume(throwing: error)
