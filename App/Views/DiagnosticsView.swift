@@ -1,4 +1,5 @@
-import Foundation\nimport SwiftUI
+import Foundation
+import SwiftUI
 
 struct DiagnosticsView: View {
     @EnvironmentObject private var store: AppStore
