@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: Vendor/Libmihomo.xcframework
-          key: mihomo-ios-proxycat-fd302ed-go1.26-${{ runner.os }}
+          key: mihomo-ios-${{ hashFiles('scripts/build-mihomo-lib.sh') }}-go1.26-${{ runner.os }}
 
       - name: Build Mihomo iOS core
         if: steps.restore-mihomo.outputs.cache-hit != 'true'
@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: Vendor/Libmihomo.xcframework
-          key: mihomo-ios-proxycat-fd302ed-go1.26-${{ runner.os }}
+          key: mihomo-ios-${{ hashFiles('scripts/build-mihomo-lib.sh') }}-go1.26-${{ runner.os }}
 
       - name: Restore libXray cache
         id: restore-libxray
