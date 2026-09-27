@@ -134,6 +134,7 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Extensions/Xray/XrayTunnel.entitlements
         APPLICATION_EXTENSION_API_ONLY: YES
         SKIP_INSTALL: YES
+        OTHER_LDFLAGS: "$(inherited) -lresolv"
     dependencies:
       - framework: Vendor/LibXray.xcframework
         embed: false
