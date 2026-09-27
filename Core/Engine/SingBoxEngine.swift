@@ -1,8 +1,11 @@
 import Foundation
+import Libbox
 import NetworkExtension
 
 final class SingBoxEngine: VPNEngine {
     let kind: TunnelProtocol
+
+    private var runtime: SingBoxRuntime?
 
     init(kind: TunnelProtocol) {
         precondition(kind == .vless || kind == .hysteria2)
@@ -10,14 +13,21 @@ final class SingBoxEngine: VPNEngine {
     }
 
     func start(profile: VPNProfile, provider: NEPacketTunnelProvider) async throws {
-        // Phase 2:
-        // - compile VPNProfile + RoutingProfile to sing-box JSON
-        // - start the iOS sing-box TUN backend
-        // - VLESS and Hysteria2 share this engine
-        throw VPNEngineError.coreNotLinked("sing-box")
+        let config = try SingBoxConfigurationBuilder.build(for: profile)
+
+        var validationError: NSError?
+        LibboxCheckConfig(config, &validationError)
+        if let validationError {
+            throw validationError
+        }
+
+        let runtime = SingBoxRuntime(provider: provider)
+        try runtime.start(configContent: config)
+        self.runtime = runtime
     }
 
     func stop() async {
-        // Implemented when sing-box is linked.
+        runtime?.stop()
+        runtime = nil
     }
 }
