@@ -1,5 +1,14 @@
 # RemnantVOP
 
+## Download unsigned iOS builds
+
+The `clashmi-migration` branch builds an unsigned Remnant VPN IPA automatically. After a successful iOS build, a second job checks SHA-256, IPA integrity and all three Packet Tunnel extensions, then publishes a **GitHub prerelease**.
+
+**[Download from GitHub Releases](https://github.com/NeyJealous/RemnantVOP/releases)** (sign in if this repository is private).
+
+Each prerelease has a unique build tag and contains the IPA, checksum and `SIGNING.md`. Sign with your own Apple certificate/provisioning profiles. The CI build does not certify the runtime behavior of VLESS, Hysteria2 or AWG on a physical iPhone.
+
+
 iOS VPN client for:
 
 - AmneziaWG 3.1

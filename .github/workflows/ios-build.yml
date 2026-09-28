@@ -10,6 +10,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ios-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -104,8 +107,8 @@ jobs:
           cp -R "$APP" build/Payload/
           cd build
           /usr/bin/zip -qry RemnantVOP-mihomo-migration-unsigned.ipa Payload
+          shasum -a 256 RemnantVOP-mihomo-migration-unsigned.ipa > SHA256SUMS.txt
           cd ..
-          shasum -a 256 build/RemnantVOP-mihomo-migration-unsigned.ipa > build/SHA256SUMS.txt
 
       - name: Upload release candidate
         uses: actions/upload-artifact@v4
@@ -116,3 +119,61 @@ jobs:
             build/SHA256SUMS.txt
             docs/SIGNING.md
           if-no-files-found: error
+
+  publish_release:
+    name: Publish downloadable unsigned IPA
+    needs: build
+    if: ${{ github.event_name != 'pull_request' && github.ref_type == 'branch' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: RemnantVOP-mihomo-migration-unsigned
+          path: downloaded
+
+      - name: Verify checksums, IPA and all VPN extensions
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          cp downloaded/build/RemnantVOP-mihomo-migration-unsigned.ipa release/
+          cp downloaded/build/SHA256SUMS.txt release/
+          cp downloaded/docs/SIGNING.md release/
+          cd release
+          sha256sum -c SHA256SUMS.txt
+          unzip -tq RemnantVOP-mihomo-migration-unsigned.ipa > /dev/null
+          EXTENSION_COUNT="$(unzip -Z1 RemnantVOP-mihomo-migration-unsigned.ipa | grep -E '^Payload/RemnantVOP.app/PlugIns/[^/]+\\.appex/' | cut -d/ -f4 | sort -u | wc -l)"
+          test "$EXTENSION_COUNT" -eq 3
+
+      - name: Publish GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          TAG="remnant-${GITHUB_REF_NAME}-build-${GITHUB_RUN_NUMBER}"
+          cat > release/RELEASE_NOTES.md <<'EOF'
+          ## Remnant VPN — iOS unsigned test build
+
+          This prerelease is automatically published **only after a successful iOS Release build** and verification of the IPA, SHA-256 checksum and three Packet Tunnel extensions.
+
+          **Downloads:** unsigned IPA, SHA256SUMS.txt and SIGNING.md.
+
+          Sign the main app and all three embedded VPN extensions with your own Apple certificate and compatible provisioning profiles. This build has not been validated for network connectivity on a physical iPhone; a successful CI build alone does not confirm that each protocol works.
+          EOF
+          gh release create "$TAG" \
+            release/RemnantVOP-mihomo-migration-unsigned.ipa \
+            release/SHA256SUMS.txt \
+            release/SIGNING.md \
+            --target "$GITHUB_SHA" \
+            --title "Remnant VPN — ${GITHUB_REF_NAME} — Build ${GITHUB_RUN_NUMBER}" \
+            --notes-file release/RELEASE_NOTES.md \
+            --prerelease
+          RELEASE_URL="$(gh release view "$TAG" --json url --jq '.url')"
+          {
+            echo "### Downloadable unsigned IPA published"
+            echo "[Open GitHub Release](${RELEASE_URL})"
+            echo "Tag: \`${TAG}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
