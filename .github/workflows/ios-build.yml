@@ -144,7 +144,7 @@ jobs:
           cd release
           sha256sum -c SHA256SUMS.txt
           unzip -tq RemnantVOP-mihomo-migration-unsigned.ipa > /dev/null
-          EXTENSION_COUNT="$(unzip -Z1 RemnantVOP-mihomo-migration-unsigned.ipa | grep -E '^Payload/RemnantVOP.app/PlugIns/[^/]+\\.appex/' | cut -d/ -f4 | sort -u | wc -l)"
+          EXTENSION_COUNT="$(unzip -Z1 RemnantVOP-mihomo-migration-unsigned.ipa | grep -E '^Payload/RemnantVOP.app/PlugIns/[^/]+\.appex/' | cut -d/ -f4 | sort -u | wc -l)"
           test "$EXTENSION_COUNT" -eq 3
 
       - name: Publish GitHub prerelease
